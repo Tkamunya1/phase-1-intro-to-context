@@ -1,87 +1,77 @@
 // Your code here
-const allEmployees = []
-function createEmployeeRecord([firstName, familyName, title, pay]) {
-  const employeeRecord = {
-    firstName: firstName,
-    familyName: familyName,
-    title: title,
-    payPerHour: pay,
-    timeInEvents: [],
-    timeOutEvents: []
-  }
-  allEmployees.push(employeeRecord)
-  return employeeRecord
+let createEmployeeRecord=
+function createEmployeeRecord(row){
+return{
+firstName:row[0],
+familyName:row[1],
+title:row[2],
+payPerHour:row[3],
+timeInEvents:[],
+timeOutEvents:[]
 }
-function createEmployeeRecords(arrays){
-    const arrOfObjs = []
-  arrays.forEach((array) => {
-    const newObj = createEmployeeRecord(array)
-    arrOfObjs.push(newObj)
-  })
-  return arrOfObjs
 }
-function createTimeInEvent(employee, date) {
-    const hour = date.split(" ")[1]
-    const MDYdate = date.split(" ")[0]
-    const timeInEmployee = {
-      type: "TimeIn",
-      hour: parseInt(hour, 10),
-      date: MDYdate
-    }
-    const timeInEvents = employee.timeInEvents
-    timeInEvents.push(timeInEmployee)
+
+let createEmployeeRecords =
+ function(employeeRowData) {
+    return employeeRowData.map(function(row){
+        return createEmployeeRecord(row)
+    })
+}
+let createTimeInEvent=
+function(employee,Object){
+    let [date, hour] = Object.split(' ')
+
+    employee.timeInEvents.push({
+        type: "TimeIn",
+        hour: parseInt(hour, 10),
+        date,
+    })
+
     return employee
-  }
-  function createTimeOutEvent(employee, date) {
-    const hour = date.split(" ")[1]
-    const MDYdate = date.split(" ")[0]
-    const timeOutEmployee = {
-      type: "TimeOut",
-      hour: parseInt(hour, 10),
-      date: MDYdate
-    }
-    const timeOutEvents = employee.timeOutEvents
-    timeOutEvents.push(timeOutEmployee)
+}
+let createTimeOutEvent = 
+function(employee, Object){
+    let [date, hour] = Object.split(' ')
+
+    employee.timeOutEvents.push({
+        type: "TimeOut",
+        hour: parseInt(hour, 10),
+        date,
+    })
+
     return employee
-  }
-  
-  function hoursWorkedOnDate(employee, date) {
-    let timeIn =""
-    let timeOut =""
-    employee.timeInEvents.forEach((x) => {
-      if (x.date === date) {
-        timeIn = x.hour
-      }
+}
+let hoursWorkedOnDate = function(employee, soughtDate){
+    let inEvent = employee.timeInEvents.find(function(e){
+        return e.date === soughtDate
     })
-    employee.timeOutEvents.forEach((x) => {
-      if (x.date === date) {
-        timeOut = x.hour
-      }
+
+    let outEvent = employee.timeOutEvents.find(function(e){
+        return e.date === soughtDate
     })
-    const hoursWorked = (timeOut - timeIn) / 100
-    return hoursWorked
-  }
-  
-  function wagesEarnedOnDate(employee, date) {
-    const hoursWorked = hoursWorkedOnDate(employee, date)
-    const dayCheck = hoursWorked * employee.payPerHour
-    return dayCheck
-  }
-  
-  function allWagesFor(employee) {
-    const daysWorked = employee.timeInEvents.map (x => x.date)
-    let dayCheck = 0
-    daysWorked.forEach(date => {
-      const newWage = wagesEarnedOnDate(employee, date)
-      dayCheck = dayCheck + newWage
+
+    return (outEvent.hour - inEvent.hour) / 100
+}
+
+let wagesEarnedOnDate = function(employee, date){
+    let rawWage = hoursWorkedOnDate(employee, date)
+        * employee.payPerHour
+    return parseFloat(rawWage.toString())
+}
+
+let allWagesFor = function(employee){
+    let eligibleDates = employee.timeInEvents.map(function(e){
+        return e.date
     })
-    return dayCheck
-  }
-  
-  function calculatePayroll(array) {
-    let totalPayroll = 0
-    array.forEach(employee => {
-      totalPayroll = totalPayroll + allWagesFor(employee)
-    })
-    return totalPayroll
-  }  
+
+    let payable = eligibleDates.reduce(function(day, d){
+        return day + wagesEarnedOnDate(employee, d)
+    }, 0)
+
+    return payable
+}
+let calculatePayroll = function(arrayOfEmployeeRecords){
+    return arrayOfEmployeeRecords.reduce(function(day, rec){
+        return day + allWagesFor(rec)
+    }, 0)
+}
